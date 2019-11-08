@@ -1,0 +1,27 @@
+div.container {
+    display: flex;
+    flex-direction: column;
+    width: '100%';
+    padding: 12px;
+    align-items: center;
+}
+
+.tokenTitle {
+    font-size: 1.3rem;
+    text-decoration-line: underline;
+    margin: 8px;
+}
+
+div.row {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    margin-top: 16px;
+}
+
+div.stat {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    align-items: center;
+}

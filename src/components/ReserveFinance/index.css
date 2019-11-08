@@ -1,0 +1,15 @@
+div.reserveFinanceContainer {
+    display: flex;
+    flex-direction: row;
+    width: '100%';
+    padding: 12px;
+    justify-content: center;
+    align-items: center;
+}
+
+div.detail {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    align-items: center;
+}

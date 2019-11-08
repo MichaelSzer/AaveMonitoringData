@@ -1,0 +1,79 @@
+div.events-monitor {
+    display: flex;
+    flex-direction: column;
+    width: 80vw;
+    padding: 12px;
+    margin-top: 16px;
+}
+
+div.events-monitor-list {
+    display: flex;
+    flex-direction: column-reverse;
+}
+
+div.events-monitor-item {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding: 6px;
+    transition: background-color 1s linear;
+    -moz-transition: background-color 1s linear;
+    -o-transition: background-color 1s linear;
+    -webkit-transition: background-color 1s linear;
+}
+
+div.events-monitor-item-return-values {
+    display: flex;
+    flex: 1;
+    flex-direction: row;
+    justify-content: space-around;
+    margin-left: 16px;
+    margin-right: 16px;
+    color: white;
+}
+
+div.events-monitor-list-value {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-direction: column;
+}
+
+#live-streaming {
+    width: 12px;
+    height: 12px;
+    border-radius: 46px;
+    margin-left: 6px;
+    margin-top: 2px;
+    -webkit-animation: live-streaming-background 4s cubic-bezier(1,0,0,1) infinite;
+    animation: live-streaming-background 4s cubic-bezier(1,0,0,1) infinite;  
+}
+
+@-webkit-keyframes live-streaming-background {
+    0% { background-color: red; }
+    30% { background-color: red; }  
+    65% { background-color: white; }
+    100% { background-color: red; }
+}
+
+@keyframes live-streaming-background {
+    0% { background-color: red; }
+    30% { background-color: red; }  
+    65% { background-color: white; }
+    100% { background-color: red; }
+}
+
+a#transaction {
+    background-color: #65499c;
+    margin-bottom: 8px;
+    border-radius: 12px;
+}
+
+a#transaction:link, a#transaction:visited, a#transaction:active {
+    text-decoration: none;
+}
+
+a#transaction:hover {
+    background-color: #ba68c8;
+}

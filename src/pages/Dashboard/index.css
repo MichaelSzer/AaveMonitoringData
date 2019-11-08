@@ -1,0 +1,20 @@
+div.dashboard {
+    display: flex;
+    flex-direction: column;
+    width: 80vw;
+    padding: 20px;
+    background-color: #ede7f6;
+}
+
+div.asset-select {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    border-radius: 24px;
+    background-color: #d1c4e9;
+    width: 130px;
+    position: absolute;
+    padding: 6px 16px 6px 12px;
+    box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.2);
+}
