@@ -7,19 +7,21 @@ import * as LendingPool from './contracts/LendingPool';
 
 async function LoadWeb3() {
   const Web3 = require('web3');
-  const provider = new Web3.providers.WebsocketProvider("wss://kovan.infura.io/ws");
-  //const provider = new Web3.providers.HttpProvider("https://kovan.infura.io/v3/375d91eea988403eb8d1bcd27821c4d9");
-  window.web3 = new Web3(provider);
+  const providerWebSocket = new Web3.providers.WebsocketProvider("wss://kovan.infura.io/ws");
+  const providerHttps = new Web3.providers.HttpProvider("https://kovan.infura.io/v3/375d91eea988403eb8d1bcd27821c4d9");
+  window.web3 = new Web3(providerWebSocket);
+  window.web3Https = new Web3(providerHttps);
   
   // Load Lending Pool Addresses Provider
-  window.lendingPoolAddressesProvider = new window.web3.eth.Contract(LendingPoolAddressesProvider.abi, LendingPoolAddressesProvider.address);
+  window.lendingPoolAddressesProvider = new window.web3Https.eth.Contract(LendingPoolAddressesProvider.abi, LendingPoolAddressesProvider.address);
 
   const addrLendingPool = await window.lendingPoolAddressesProvider.methods.getLendingPool().call()
   LendingPool.setAddress(addrLendingPool);
   
-  window.lendingPool = new window.web3.eth.Contract(LendingPool.abi, addrLendingPool);
+  window.lendingPoolWebSocket = new window.web3.eth.Contract(LendingPool.abi, addrLendingPool);
+  window.lendingPoolHttps = new window.web3Https.eth.Contract(LendingPool.abi, addrLendingPool);
   window.ready = true;
-  /* const addressesAToken = await window.lendingPool.methods.getReserves().call();
+  /* const addressesAToken = await window.lendingPoolHttps.methods.getReserves().call();
   AToken.setAddresses(addressesAToken);
   window.reserveOne = new window.web3.eth.Contract(LendingPool.abi, addrLendingPool); */
 }

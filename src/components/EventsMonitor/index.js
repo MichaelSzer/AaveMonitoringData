@@ -100,7 +100,7 @@ const EventsMonitor = ({ events }) => {
     events = events.slice(events.length - 10);
 
     return(
-        <div className="events-monitor">
+        <div id="events-monitor">
             <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start', width: '100%' }}>
                 <p style={{ fontSize: '1.2rem' }}>Events Monitor</p>
                 <div id="live-streaming" />

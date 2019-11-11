@@ -1,4 +1,4 @@
-div.events-monitor {
+div#events-monitor {
     display: flex;
     flex-direction: column;
     width: 80vw;

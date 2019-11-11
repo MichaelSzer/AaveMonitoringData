@@ -99,7 +99,7 @@ export const reserves = {
 }
 
 export const fetchReserveData = async (reserveKey) => {
-    const reserveData = await window.lendingPool.methods.getReserveData(reserves[reserveKey].address).call();
+    const reserveData = await window.lendingPoolHttps.methods.getReserveData(reserves[reserveKey].address).call();
     reserves[reserveKey].reserveData = reserveData;
 }
 

@@ -3,10 +3,11 @@ import './index.css';
 import TokenStats from '../../components/TokenStats';
 import ReserveFinance from '../../components/ReserveFinance';
 import EventsMonitor from '../../components/EventsMonitor';
+import Graphs from '../../components/Graphs';
 import MenuItem from '@material-ui/core/MenuItem';
 import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
-import { reservesInfo, fetchData } from '../../data/reserves';
+import { reservesInfo, fetchData, fetchAllOnlyReserveData, busy } from '../../data/reserves';
 
 const BigNumber = require('bignumber.js');
 
@@ -16,17 +17,18 @@ class Dashboard extends React.Component {
         selected: 'ETH',
         isLoading: true,
         reserve: {},
+        allReservesData: null,
         allEvents: [],
         eventsFilter: '' 
     };
 
     render(){
 
-        const { reserve, isLoading, selected, allEvents, eventsFilter } = this.state;
+        const { reserve, isLoading, selected, allEvents, eventsFilter, allReservesData } = this.state;
         
         const events = this.filterEvents(allEvents, eventsFilter);
 
-        console.log(events);
+        //console.log(events);
 
         const bnTotalSupply = !isLoading? new BigNumber(reserve.aTokenData.totalSupply) : 0;
         const bnAvailableLiquidity = !isLoading? new BigNumber(reserve.reserveData.availableLiquidity) : 0;
@@ -44,9 +46,53 @@ class Dashboard extends React.Component {
 
         window.reserve = reserve;
 
+
+        let totalLiquidity = new BigNumber(0);
+        let dataLiquidationGraph;
+
+        if(allReservesData !== null){
+            Object.keys(allReservesData).forEach(key => totalLiquidity = totalLiquidity.plus(new BigNumber(allReservesData[key].reserveData.totalLiquidity).shiftedBy(-18).multipliedBy(allReservesData[key].usd)));
+            const rawPercentages = Object.keys(allReservesData).map(key => {
+                const liquidity = new BigNumber(allReservesData[key].reserveData.totalLiquidity).shiftedBy(-18).multipliedBy(allReservesData[key].usd);
+                const usd = new BigNumber(allReservesData[key].usd);
+                const percentage = liquidity.dividedBy(totalLiquidity).multipliedBy("100").toFixed(2);
+                return { y: percentage, label: allReservesData[key].name, usd: usd.toFixed(2) };
+            });
+
+            let displayedPercentage = 0;
+
+            dataLiquidationGraph = rawPercentages.filter(raw => {
+                if(Number(raw.y) >= 5){
+                    displayedPercentage += Number(raw.y);
+                    return true;
+                }
+
+                return false;
+            });
+
+            dataLiquidationGraph.push({ 
+                y: Number(100 - displayedPercentage).toFixed(2).toString(), 
+                label: 'Others'
+            });
+        }
+
+        const dataLinesCharts = {};
+        const y = {};
+        allEvents.forEach(eventObj => {
+            if(dataLinesCharts[eventObj.event] === undefined){
+                dataLinesCharts[eventObj.event] = { name: eventObj.event, dataPoints: [] };
+                y[eventObj.event] = 0;
+            }
+ 
+            y[eventObj.event]++;
+            dataLinesCharts[eventObj.event].dataPoints.push({ x: new Date(eventObj.returnValues.timestamp*1000), y: y[eventObj.event] });
+        });
+        
+        //console.log('dataLinesCharts', dataLinesCharts);
+
         return(
             <React.Fragment>
-                <div className="dashboard">
+                <div id="dashboard" className="dashboard">
                     <div className="asset-select">
                         <text style={{ fontSize: 14, paddingRight: 12 }}>
                             {`Asset: `}
@@ -82,6 +128,11 @@ class Dashboard extends React.Component {
                         usd={totalUSD}
                     />
                 </div>
+                <Graphs
+                    isLoading={allReservesData === null} 
+                    dataPie={dataLiquidationGraph}
+                    dataLinesCharts={dataLinesCharts}
+                />
                 <EventsMonitor
                     events={events}
                 />
@@ -134,8 +185,8 @@ class Dashboard extends React.Component {
 
     processLendingPool = async () => {
 
-        const allEvents = await window.lendingPool.getPastEvents('allEvents', { fromBlock: 0, toBlock: 'latest' });
-        window.lendingPool.events.allEvents({ fromBlock: 'latest' }).on('data', (eventObj) => {
+        const allEvents = await window.lendingPoolWebSocket.getPastEvents('allEvents', { fromBlock: 0, toBlock: 'latest' });
+        window.lendingPoolWebSocket.events.allEvents({ fromBlock: 'latest' }).on('data', (eventObj) => {
             this.setState({ allEvents: this.state.allEvents.concat([eventObj]) });
         }).on('error', console.error);
         this.setState({ allEvents });
@@ -151,16 +202,31 @@ class Dashboard extends React.Component {
         this.setState({ isLoading: false, selected, reserve });
     }
 
+    fetchAllReservesData = async () => {
+        if(busy) return;
+
+        const allReservesData = await fetchAllOnlyReserveData();
+        this.setState({ allReservesData });
+    }
+
     componentDidMount() {
 
         this.interval = setInterval(async () => {
             if(!window.ready) return;
-            clearInterval(this.interval);
-            this.processLendingPool();
-            const rawReserve = await fetchData(this.state.selected);
-            const reserve = this.processReserve(rawReserve);
-            this.setState({ reserve, isLoading: false });
+            try {
+                clearInterval(this.interval);
+                this.processLendingPool();
+                const rawReserve = await fetchData(this.state.selected);
+                const reserve = this.processReserve(rawReserve);
+                this.fetchAllReservesData();
+                //this.intervalFetchAllReservesData = setInterval(() => this.fetchAllReservesData(), 5000);
+                this.setState({ reserve, isLoading: false });
+            } catch(err) { console.log(err); }
         }, 100);
+    }
+
+    componentWillUnmount(){
+        clearInterval(this.intervalFetchAllReservesData);
     }
 }
 

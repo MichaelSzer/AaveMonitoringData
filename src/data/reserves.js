@@ -165,8 +165,10 @@ export const addressToSymbol = {
     }
 }
 
+export let busy = false;
+
 export const fetchReserveData = async (address) => {
-    const reserveData = await window.lendingPool.methods.getReserveData(address).call();
+    const reserveData = await window.lendingPoolHttps.methods.getReserveData(address).call();
     return reserveData;
 }
 
@@ -200,6 +202,22 @@ async function asyncForEach(array, callback) {
     }
 }
 
+export const fetchAllOnlyReserveData = async () => {
+    busy = true;
+
+    const reserves = Object.assign({}, reservesInfo);
+
+    const reservesKeys = Object.keys(reserves);
+    await asyncForEach(reservesKeys, async (reserveKey) => {
+        reserves[reserveKey].reserveData = await fetchReserveData(reserves[reserveKey].address);
+        reserves[reserveKey].usd = await fetchUSDPrice(reserveKey);
+    });
+
+    busy = false;
+
+    return reserves;
+}
+
 export const fetchAllReservesData = async () => {
 
     const reserves = Object.assign({}, reservesInfo);
@@ -217,6 +235,7 @@ export const fetchAllReservesData = async () => {
 }
 
 export const fetchData = async (symbol) => {
+    busy = true;
 
     const reserve = reservesInfo[symbol];
 
@@ -225,6 +244,8 @@ export const fetchData = async (symbol) => {
     reserve.aTokenData = await fetchAToken(reserve.aToken);
     reserve.usd = await fetchUSDPrice(reserve.symbol);
     reserve.aTokenData.pastEvents = await reserve.aToken.getPastEvents('allEvents', { fromBlock: 0, toBlock: 'latest' });
+
+    busy = false;
 
     return reserve;
 }
